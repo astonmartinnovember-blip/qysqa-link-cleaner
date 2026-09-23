@@ -28,7 +28,7 @@ function cleanUrl(raw) {
 
   const normalized = /^https?:\/\//i.test(input)
     ? input
-    : `https://${input}`;
+    : 'https://' + input;
 
   const url = new URL(normalized);
 
@@ -103,8 +103,6 @@ function page() {
   --text:#f7f8fb;
   --muted:#9aa3b5;
   --accent:#7c5cff;
-  --ok:#5ee19b;
-  --bad:#ff7b8a;
 }
 
 *{
@@ -351,7 +349,6 @@ input:focus{
 }
 
 @media(max-width:650px){
-
   .row,
   .result-grid{
     grid-template-columns:1fr;
@@ -385,12 +382,14 @@ input:focus{
 <div class="wrap">
 
   <div class="brand">
+
     <div class="logo">Q</div>
 
     <div>
       <b>Qysqa</b><br>
       <span>тазарт • қысқарт • бөліс</span>
     </div>
+
   </div>
 
   <section class="hero">
@@ -410,13 +409,17 @@ input:focus{
   <section class="card">
 
     <div class="field">
-      <label>Сілтемені енгіз</label>
+
+      <label>
+        Сілтемені енгіз
+      </label>
 
       <input
         id="url"
         placeholder="https://example.com/product?utm_source=instagram..."
         autocomplete="off"
       />
+
     </div>
 
     <div class="row">
@@ -493,11 +496,7 @@ input:focus{
           </div>
 
           <hr
-            style="
-              border:0;
-              border-top:1px solid var(--line);
-              margin:16px 0
-            "
+            style="border:0;border-top:1px solid var(--line);margin:16px 0"
           >
 
           <div class="kicker">
@@ -540,30 +539,29 @@ input:focus{
 
 <script>
 
-const $ = id => document.getElementById(id);
+const $ = function(id) {
+  return document.getElementById(id);
+};
 
 const btn = $('go');
 const status = $('status');
 const result = $('result');
 
-function setStatus(msg,type=''){
-
+function setStatus(msg, type) {
   status.textContent = msg;
-
   status.className =
-    'status show ' + type;
-
+    'status show ' + (type || '');
 }
 
-btn.onclick = async () => {
+btn.onclick = async function() {
 
-  const url =
+  const urlValue =
     $('url').value.trim();
 
-  const slug =
+  const slugValue =
     $('slug').value.trim();
 
-  if(!url){
+  if (!urlValue) {
 
     setStatus(
       'Алдымен сілтемені енгіз.',
@@ -571,7 +569,6 @@ btn.onclick = async () => {
     );
 
     return;
-
   }
 
   btn.disabled = true;
@@ -579,31 +576,34 @@ btn.onclick = async () => {
   btn.textContent =
     'Өңделіп жатыр...';
 
-  result.classList.remove('show');
+  result.classList.remove(
+    'show'
+  );
 
-  try{
+  try {
 
-    const r = await fetch(
-      '/api/shorten',
-      {
-        method:'POST',
+    const r =
+      await fetch(
+        '/api/shorten',
+        {
+          method: 'POST',
 
-        headers:{
-          'content-type':
-            'application/json'
-        },
+          headers: {
+            'content-type':
+              'application/json'
+          },
 
-        body:JSON.stringify({
-          url,
-          slug
-        })
-      }
-    );
+          body: JSON.stringify({
+            url: urlValue,
+            slug: slugValue
+          })
+        }
+      );
 
     const d =
       await r.json();
 
-    if(!r.ok){
+    if (!r.ok) {
 
       throw new Error(
         d.error ||
@@ -628,22 +628,26 @@ btn.onclick = async () => {
     $('tags').innerHTML = '';
 
     const secure =
-      document.createElement('span');
+      document.createElement(
+        'span'
+      );
 
     secure.className =
       'tag ok';
 
     secure.textContent =
       d.https
-      ? 'HTTPS ✓'
-      : 'HTTP';
+        ? 'HTTPS ✓'
+        : 'HTTP';
 
     $('tags').appendChild(
       secure
     );
 
     const host =
-      document.createElement('span');
+      document.createElement(
+        'span'
+      );
 
     host.className =
       'tag';
@@ -655,10 +659,12 @@ btn.onclick = async () => {
       host
     );
 
-    if(d.removed.length){
+    if (d.removed.length) {
 
       const removed =
-        document.createElement('span');
+        document.createElement(
+          'span'
+        );
 
       removed.className =
         'tag';
@@ -676,11 +682,13 @@ btn.onclick = async () => {
 
     $('meta').textContent =
       d.reduction > 0
-      ? `Сілтеме ${d.reduction}% ықшамдалды.`
-      : 'Tracking параметрлері табылмады.';
+        ? 'Сілтеме '
+          + d.reduction
+          + '% ықшамдалды.'
+        : 'Tracking параметрлері табылмады.';
 
     $('copy').onclick =
-      async () => {
+      async function() {
 
         await navigator.clipboard.writeText(
           d.shortUrl
@@ -690,21 +698,25 @@ btn.onclick = async () => {
           'Көшірілді ✓';
 
         setTimeout(
-          () =>
+          function() {
             $('copy').textContent =
-              'Көшіру',
+              'Көшіру';
+          },
           1200
         );
 
       };
 
     $('open').onclick =
-      () =>
+      function() {
+
         window.open(
           d.shortUrl,
           '_blank',
           'noopener'
         );
+
+      };
 
     result.classList.add(
       'show'
@@ -716,7 +728,7 @@ btn.onclick = async () => {
     );
 
   }
-  catch(e){
+  catch (e) {
 
     setStatus(
       e.message ||
@@ -725,7 +737,7 @@ btn.onclick = async () => {
     );
 
   }
-  finally{
+  finally {
 
     btn.disabled =
       false;
@@ -750,16 +762,16 @@ export default {
     const url =
       new URL(request.url);
 
-    if(
+    if (
       request.method === 'GET'
       &&
       url.pathname === '/'
-    ){
+    ) {
 
       return new Response(
         page(),
         {
-          headers:{
+          headers: {
             'content-type':
               'text/html; charset=utf-8'
           }
@@ -768,15 +780,15 @@ export default {
 
     }
 
-    if(
+    if (
       request.method === 'POST'
       &&
       url.pathname === '/api/shorten'
-    ){
+    ) {
 
-      try{
+      try {
 
-        if(!env.LINKS){
+        if (!env.LINKS) {
 
           return json(
             {
@@ -800,17 +812,14 @@ export default {
         let slug =
           slugify(body.slug);
 
-        if(!slug){
-
-          slug =
-            randomSlug();
-
+        if (!slug) {
+          slug = randomSlug();
         }
 
-        if(
-          ['api','favicon.ico']
-          .includes(slug)
-        ){
+        if (
+          ['api', 'favicon.ico']
+            .includes(slug)
+        ) {
 
           return json(
             {
@@ -827,11 +836,11 @@ export default {
             slug
           );
 
-        if(
+        if (
           existing
           &&
           existing !== result.clean
-        ){
+        ) {
 
           return json(
             {
@@ -849,57 +858,53 @@ export default {
         );
 
         const shortUrl =
-          \`\${url.origin}/\${slug}\`;
+          url.origin
+          + '/'
+          + slug;
 
         const originalLength =
           String(body.url).length;
 
         const reduction =
           originalLength > 0
-          ? Math.max(
-              0,
-              Math.round(
-                (
-                  1 -
-                  result.clean.length /
-                  originalLength
+            ? Math.max(
+                0,
+                Math.round(
+                  (
+                    1
+                    -
+                    result.clean.length
+                    /
+                    originalLength
+                  )
+                  *
+                  100
                 )
-                *
-                100
               )
-            )
-          : 0;
+            : 0;
 
         return json({
-
           shortUrl,
-
-          cleanUrl:
-            result.clean,
-
-          removed:
-            result.removed,
-
-          host:
-            destination.hostname,
-
+          cleanUrl: result.clean,
+          removed: result.removed,
+          host: destination.hostname,
           https:
             destination.protocol
             ===
             'https:',
-
           reduction
-
         });
 
       }
-      catch(e){
+      catch (e) {
 
         return json(
           {
             error:
-              e?.message ||
-              'Сілтеме дұрыс емес.'
+              e &&
+              e.message
+                ? e.message
+                : 'Сілтеме дұрыс емес.'
           },
           400
         );
@@ -908,24 +913,26 @@ export default {
 
     }
 
-    if(
+    if (
       request.method === 'GET'
-    ){
+    ) {
 
       const slug =
         slugify(
           url.pathname
-            .replace(/^\\/+/, '')
+            .replace(/^\/+/, '')
         );
 
-      if(slug){
+      if (slug) {
 
         const destination =
-          await env.LINKS?.get(
-            slug
-          );
+          env.LINKS
+            ? await env.LINKS.get(
+                slug
+              )
+            : null;
 
-        if(destination){
+        if (destination) {
 
           return Response.redirect(
             destination,
@@ -941,7 +948,7 @@ export default {
     return new Response(
       'Not found',
       {
-        status:404
+        status: 404
       }
     );
 
