@@ -1,3 +1,4 @@
+// Qysqa rebuild
 const TRACKING_PARAMS = [
   /^utm_/i,
   /^fbclid$/i,
